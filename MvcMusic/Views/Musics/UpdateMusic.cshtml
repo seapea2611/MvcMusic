@@ -1,0 +1,118 @@
+﻿@model MvcMusic.Models.Music
+
+@{
+    ViewData["Title"] = "UpdateMusic";
+}
+<h1>
+    Update
+</h1>
+
+
+<form id="update-form" asp-controller="MusicsApiController" asp-action="UpdateMusic" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="form-group">
+        <input type="hidden" asp-for="Id" />
+    </div>
+    <div class="form-group">
+        <label asp-for="Title">Title:</label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="ReleaseDate">Release Date:</label>
+        <input asp-for="ReleaseDate" class="form-control" />
+        <span asp-validation-for="ReleaseDate" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Genre">Genre:</label>
+        <input asp-for="Genre" class="form-control" />
+        <span asp-validation-for="Genre" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Rating">Rating:</label>
+        <input asp-for="Rating" class="form-control" />
+        <span asp-validation-for="Rating" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary" id="update-button">Submit</button>
+    <button id="delete-music">Delete Music</button>
+</form>
+
+@section scripts {
+    <link rel="stylesheet" href="~/css/jqx.base.css" />
+    <script src="~/js/jquery-3.6.0.min.js"></script>
+    <script src="~/js/jqxcore.js"></script>
+    <script src="~/js/jqxdata.js"></script>
+    <script src="~/js/jqxdatatable.js"></script>
+    <script src="~/js/jqxdate.js"></script>
+    <script src="~/js/jqxdatetimeinput.js"></script>
+    <script src="~/js/jqxgrid.js"></script>
+    <script src="~/js/jqxscrollbar.js"></script>
+    <script src="~/js/jqxmenu.js"></script>
+    <script src="~/js/jqxcheckbox.js"></script>
+    <script src="~/js/jqxlistbox.js"></script>
+    <script src="~/js/jqxdropdownlist.js"></script>
+    <script src="~/js/jqxgrid.js"></script>
+    <script src="~/js/jqxgrid.pager.js"></script>
+    <script src="~/js/jqxgrid.selection.js"></script>
+    <script src="~/js/jqxgrid.edit.js"></script>
+    <script src="~/js/jqxgrid.sort.js"></script>
+    <script src="~/js/jqxbuttons.js"></script>
+
+    <div id="jqxgrid"></div>
+    <script>
+        $(document).ready(function () {
+            $('#update-button').click(function () {
+               // event.preventDefault();
+                // Lấy dữ liệu từ các trường input
+                var id = $('#Id').val();
+                var title = $('#Title').val();
+                var releaseDate = $('#ReleaseDate').val();
+                var genre = $('#Genre').val();
+                var rating = $('#Rating').val();
+
+                // Tạo đối tượng music chứa dữ liệu
+                var music = {
+                    Id: id,
+                    Title: title,
+                    ReleaseDate: releaseDate,
+                    Genre: genre,
+                    Rating: rating
+                };
+
+                $.ajax({
+                    type: 'PUT',
+                    url: '/api/MusicsApi/' + id,
+                    data: JSON.stringify(music),                   
+                    contentType: 'application/json',
+                   success: function (data) {
+                        // Refresh the grid to display the newly added movie
+                        grid.jqxGrid('updatebounddata');
+                        // Clear the form
+                       $('#update-form')[0].reset();
+                        alert('Music updated successfully!');
+                    },
+            error: function (xhr, status, error) {
+                console.log(xhr.responseText);
+            }
+        });
+        });
+            $('#delete-music').click(function () {
+
+                var id = $('#Id').val();
+                $.ajax({
+                    url: '/api/MusicsApi/' + id, // Đường dẫn API kèm theo ID của dữ liệu cần xóa
+                    type: 'DELETE',
+                    success: function (response) {
+                        // Xử lý thành công
+                        console.log('Dữ liệu đã được xóa');
+                    },
+                    error: function (xhr, status, error) {
+                        // Xử lý lỗi
+                        console.log('Lỗi xóa dữ liệu:', error);
+                    }
+                });
+            });
+        });
+    </script>
+}

@@ -1,0 +1,89 @@
+﻿@model IEnumerable<MvcMusic.Models.Music>
+
+
+@{
+    ViewData["Title"] = "MusicList";
+}
+<h1>
+    List of Music
+</h1>
+
+<p>
+    <a asp-controller = "Musics" asp-action="CreateMusic">create MusicList</a>
+</p>
+<p>
+    <a asp-controller="Musics" asp-action="UpdateMusic">update MusicList</a>
+</p>
+
+@section scripts {
+    <link rel="stylesheet" href="~/css/jqx.base.css" />
+    <script src="~/js/jquery-3.6.0.min.js"></script>
+    <script src="~/js/jqxcore.js"></script>
+    <script src="~/js/jqxdata.js"></script>
+    <script src="~/js/jqxdatatable.js"></script>
+    <script src="~/js/jqxdate.js"></script>
+    <script src="~/js/jqxdatetimeinput.js"></script>
+    <script src="~/js/jqxgrid.js"></script>
+    <script src="~/js/jqxscrollbar.js"></script>
+    <script src="~/js/jqxmenu.js"></script>
+    <script src="~/js/jqxcheckbox.js"></script>
+    <script src="~/js/jqxlistbox.js"></script>
+    <script src="~/js/jqxdropdownlist.js"></script>
+    <script src="~/js/jqxgrid.js"></script>
+    <script src="~/js/jqxgrid.pager.js"></script>
+    <script src="~/js/jqxgrid.selection.js"></script>
+    <script src="~/js/jqxgrid.edit.js"></script>
+    <script src="~/js/jqxgrid.sort.js"></script>
+    <script src="~/js/jqxbuttons.js"></script>
+
+    <div id="jqxgrid"></div>
+    <script>
+        $.ajax({
+            type: "GET",
+            url: "/api/MusicsApi",
+            dataType: "json",
+            success: function (data) {
+                console.log(data);
+                var source = {
+                    datafields: [
+                        { name: 'id', type: 'int' },
+                        { name: 'title', type: 'string' },
+                        { name: 'releaseDate', type: 'string' },
+                        { name: 'genre', type: 'string' },
+                        { name: 'rating', type: 'string' }
+                    ],
+                    localdata: data
+                };
+                var dataAdapter = new $.jqx.dataAdapter(source);
+                $('#jqxgrid').jqxGrid({
+                    width: '100%',
+                    source: dataAdapter,
+                    pageable: true,
+                    autoheight: true,
+                    sortable: true,
+                    altrows: true,
+                    enabletooltips: true,
+                    editable: false,
+                    selectionmode: 'multiplecellsadvanced',
+                    columns: [
+                        {
+                            text: 'ID',
+                            datafield: 'id',
+                            width: '10%',
+                            cellsrenderer: function (row, columnfield, value, defaulthtml, columnproperties) {
+                                return '<a href="/Musics/UpdateMusic/' + value + '">' + value + '</a>';
+                            }
+                        },
+                        { text: 'Title', datafield: 'title', width: '30%' },
+                        { text: 'Release Date', datafield: 'releaseDate', width: '25%' },
+                        { text: 'Genre', datafield: 'genre', width: '15%' },
+                        { text: 'Rating', datafield: 'rating', width: '20%' }
+                    ]
+                });
+            },
+            error: function (xhr, status, error) {
+                console.log(xhr.responseText);
+            }
+        });
+    </script>
+}
