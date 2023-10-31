@@ -1,4 +1,4 @@
-﻿@model IEnumerable<MvcMusic.Models.Music>
+﻿@model MvcMusic.Models.Music
 
 
 @{
@@ -34,10 +34,15 @@
     <script src="~/js/jqxgrid.selection.js"></script>
     <script src="~/js/jqxgrid.edit.js"></script>
     <script src="~/js/jqxgrid.sort.js"></script>
+    <script src="~/js/jqxgrid.filter.js"></script>
     <script src="~/js/jqxbuttons.js"></script>
+    <script src="~/js/jqxtabs.js"></script>
 
+  
     <div id="jqxgrid"></div>
+
     <script>
+
         $.ajax({
             type: "GET",
             url: "/api/MusicsApi",
@@ -54,17 +59,58 @@
                     ],
                     localdata: data
                 };
+                var initrowdetails = function (index, parentElement, gridElement, datarecord) {
+                    var tabsdiv = null;
+                    var information = null;
+                    tabsdiv = $($(parentElement).children()[0]);
+                    if (tabsdiv != null) {
+                        information = tabsdiv.find('.information');
+                        var title = tabsdiv.find('.title');
+                        title.text(datarecord.id);
+
+                        var container = $('<div style="margin: 5px;"></div>')
+                        container.appendTo($(information));
+
+                        var leftcolumn = $('<div style="float: left; width: 45%;"></div>');
+                        var rightcolumn = $('<div style="float: left; width: 55%;"></div>');
+
+                        container.append(leftcolumn);
+                        container.append(rightcolumn);
+
+                        var title = "<div style='margin: 10px;'><b>Title:</b> " + datarecord.title + "</div>";
+                        var releaseDate = "<div style='margin: 10px;'><b>Date:</b> " + datarecord.releaseDate + "</div>";
+                        $(leftcolumn).append(title);
+                        $(leftcolumn).append(releaseDate);
+
+                        var genre = "<div style='margin: 10px;'><b>Genre:</b> " + datarecord.genre + "</div>";
+                        var rating = "<div style='margin: 10px;'><b>Rating:</b> " + datarecord.rating + "</div>";
+
+                        $(rightcolumn).append(genre);
+                        $(rightcolumn).append(rating);
+
+                        $(tabsdiv).jqxTabs({ width: 750, height: 170 });
+                    }
+                }
                 var dataAdapter = new $.jqx.dataAdapter(source);
                 $('#jqxgrid').jqxGrid({
                     width: '100%',
+                    height: 400,
                     source: dataAdapter,
                     pageable: true,
-                    autoheight: true,
                     sortable: true,
                     altrows: true,
                     enabletooltips: true,
                     editable: false,
                     selectionmode: 'multiplecellsadvanced',
+                    filterable: true,
+                    showfilterrow: true,
+                    rowdetails: true,
+                    rowdetailstemplate: { rowdetails: "<div style='margin: 10px;'><ul style='margin-left: 20px;'><li class='title'></li></ul><div class='information'></div></div>", rowdetailsheight: 100 },
+                    ready: function () {
+                        $("#jqxgrid").jqxGrid('showrowdetails', 0);
+                        $("#jqxgrid").jqxGrid('showrowdetails', 1);
+                    },
+                    initrowdetails: initrowdetails,
                     columns: [
                         {
                             text: 'ID',
@@ -74,10 +120,15 @@
                                 return '<a href="/Musics/UpdateMusic/' + value + '">' + value + '</a>';
                             }
                         },
-                        { text: 'Title', datafield: 'title', width: '30%' },
+                        { text: 'Title', datafield: 'title', width: '20%' },
                         { text: 'Release Date', datafield: 'releaseDate', width: '25%' },
                         { text: 'Genre', datafield: 'genre', width: '15%' },
-                        { text: 'Rating', datafield: 'rating', width: '20%' }
+                        { text: 'Rating', datafield: 'rating', width: '20%' },
+                        { text: 'Sửa', columntype: 'button', cellsalign: 'center', filterable: false, width: '10%',
+                            cellsrenderer: function (row, columnfield, value, defaulthtml, columnpropertie) {
+                                return '<button onclick="fillData(' + row + ')">Fill Data</button>';
+                            }
+                        }
                     ]
                 });
             },
@@ -85,5 +136,169 @@
                 console.log(xhr.responseText);
             }
         });
+        function fillData(row) {
+            var dataRecord = $('#jqxgrid').jqxGrid('getrowdata', row);
+            // Điền dữ liệu vào các textfield
+            $('#Id').val(dataRecord.id);
+            $('#Title').val(dataRecord.title);
+            $('#ReleaseDate').val(dataRecord.releaseDate);
+            $('#Genre').val(dataRecord.genre);
+            $('#Rating').val(dataRecord.rating);
+        }
+        $(document).ready(function () {
+
+            function loadDataToTable() {
+                $.ajax({
+                    type: "GET",
+                    url: "/api/MusicsApi",
+                    dataType: "json",
+                    success: function (data) {
+                        console.log(data);
+                        var source = {
+                            datafields: [
+                                { name: 'id', type: 'int' },
+                                { name: 'title', type: 'string' },
+                                { name: 'releaseDate', type: 'string' },
+                                { name: 'genre', type: 'string' },
+                                { name: 'rating', type: 'string' }
+                            ],
+                            localdata: data
+                        };
+                        
+                        
+                        var dataAdapter = new $.jqx.dataAdapter(source);
+                        $('#jqxgrid').jqxGrid({
+                            width: '100%',
+                            source: dataAdapter,
+                            pageable: true,
+                            autoheight: true,
+                            sortable: true,
+                            altrows: true,
+                            enabletooltips: true,
+                            editable: false,
+                            selectionmode: 'multiplecellsadvanced',
+                            filterable: true,
+                            showfilterrow: true,
+                            
+                            columns: [
+                                {
+                                    text: 'ID',
+                                    datafield: 'id',
+                                    width: '10%',
+                                    cellsrenderer: function (row, columnfield, value, defaulthtml, columnproperties) {
+                                        return '<a href="/Musics/UpdateMusic/' + value + '">' + value + '</a>';
+                                    }
+                                },
+                                { text: 'Title', datafield: 'title', width: '20%' },
+                                { text: 'Release Date', datafield: 'releaseDate', width: '25%' },
+                                { text: 'Genre', datafield: 'genre', width: '15%' },
+                                { text: 'Rating', datafield: 'rating', width: '20%' },
+                                {
+                                    text: 'Sửa', columntype: 'button', cellsalign: 'center', filterable: false, width: '10%',
+                                    cellsrenderer: function (row, columnfield, value, defaulthtml, columnpropertie) {
+                                        return '<button onclick="fillData(' + row + ')">Fill Data</button>';
+                                    }
+                                }
+                            ]
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            }
+
+            $('#update-form').on('submit', function (event) {
+                event.preventDefault();
+                // Lấy dữ liệu từ các trường input
+                var id = $('#Id').val();
+                var title = $('#Title').val();
+                var releaseDate = $('#ReleaseDate').val();
+                var genre = $('#Genre').val();
+                var rating = $('#Rating').val();
+
+                // Tạo đối tượng music chứa dữ liệu
+                var music = {
+                    Title: title,
+                    ReleaseDate: releaseDate,
+                    Genre: genre,
+                    Rating: rating
+                };
+
+                $.ajax({
+                    data: JSON.stringify(music),
+                    contentType: 'application/json',
+                    type: 'PUT',
+                    url: '/api/MusicsApi/' + id,
+
+                    success: function (data) {
+                        $('#jqxgrid').jqxGrid('updatebounddata');
+                       
+                        // Clear the form
+                       // $('#update-form')[0].reset();
+                        loadDataToTable();
+
+                        alert('Music updated successfully!');
+                    },
+                    error: function (xhr, status, error) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            });
+            $('#delete-music').click(function () {
+
+                var id = $('#Id').val();
+                $.ajax({
+                    url: '/api/MusicsApi/' + id, // Đường dẫn API kèm theo ID của dữ liệu cần xóa
+                    type: 'DELETE',
+                    success: function (response) {
+                        // Xử lý thành công
+                        console.log('Dữ liệu đã được xóa');
+                        // xóa dòng hiện tại
+                      //  $('#jqxgrid').empty();
+                        $('#jqxgrid').jqxGrid('updatebounddata');
+                      //  $('#jqxgrid').jqxGrid('refresh');
+                        loadDataToTable();
+                    },
+                    error: function (xhr, status, error) {
+                        // Xử lý lỗi
+                        console.log('Lỗi xóa dữ liệu:', error);
+                    }
+                });
+            });
+        });
     </script>
+    <form id="update-form" asp-action="UpdateMusic" method="post">x
+        @Html.AntiForgeryToken()
+
+        <div class="form-group">
+            <label asp-for="Id">Id:</label>
+            <input asp-for="Id" class="form-control"/>
+            <span asp-validation-for="Id" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Title">Title:</label>
+            <input asp-for="Title" class="form-control" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="ReleaseDate">Release Date:</label>
+            <input asp-for="ReleaseDate" class="form-control" />
+            <span asp-validation-for="ReleaseDate" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Genre">Genre:</label>
+            <input asp-for="Genre" class="form-control" />
+            <span asp-validation-for="Genre" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Rating">Rating:</label>
+            <input asp-for="Rating" class="form-control" />
+            <span asp-validation-for="Rating" class="text-danger"></span>
+        </div>
+        <button type="submit" class="btn btn-primary" id="update-button">Submit</button>
+        <button id="delete-music">Delete Music</button>
+    </form>
+    
+        
 }

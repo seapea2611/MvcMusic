@@ -4,6 +4,7 @@ namespace MvcMusic.Models
 {
     public class Music
     {
+        
         public int Id { get; set; }
 
         [StringLength(60, MinimumLength = 3)]
@@ -12,7 +13,8 @@ namespace MvcMusic.Models
 
         public string ReleaseDate { get; set; }
 
-        [RegularExpression(@"^[a-zA-Z\s]*$"), Required, StringLength(30)]
+        [Required]
+        [RegularExpression(@"^[a-zA-Z\s]*$"), StringLength(30)]
         public string Genre { get; set; }
 
 

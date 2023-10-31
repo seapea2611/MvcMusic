@@ -8,7 +8,7 @@
 </h1>
 
 
-<form id="update-form" asp-controller="MusicsApiController" asp-action="UpdateMusic" method="post">
+<form id="update-form" asp-action="UpdateMusic" method="post">
     @Html.AntiForgeryToken()
 
     <div class="form-group">
@@ -62,8 +62,8 @@
     <div id="jqxgrid"></div>
     <script>
         $(document).ready(function () {
-            $('#update-button').click(function () {
-               // event.preventDefault();
+            $('#update-form').on('submit', function (event) {
+                event.preventDefault();
                 // Lấy dữ liệu từ các trường input
                 var id = $('#Id').val();
                 var title = $('#Title').val();
@@ -73,7 +73,6 @@
 
                 // Tạo đối tượng music chứa dữ liệu
                 var music = {
-                    Id: id,
                     Title: title,
                     ReleaseDate: releaseDate,
                     Genre: genre,
@@ -81,12 +80,12 @@
                 };
 
                 $.ajax({
+                    data: JSON.stringify(music),
+                    contentType: 'application/json',
                     type: 'PUT',
                     url: '/api/MusicsApi/' + id,
-                    data: JSON.stringify(music),                   
-                    contentType: 'application/json',
+                    
                    success: function (data) {
-                        // Refresh the grid to display the newly added movie
                         grid.jqxGrid('updatebounddata');
                         // Clear the form
                        $('#update-form')[0].reset();

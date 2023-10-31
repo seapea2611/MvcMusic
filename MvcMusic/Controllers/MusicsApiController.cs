@@ -30,6 +30,9 @@ namespace MvcMusic.Controllers
         public async Task<ActionResult> Index(int id)
         {
             var music = await _context.Music.FindAsync(id);
+            var music01 = (from m in _context.Music
+                           where m.Id == id
+                           select m).ToList();
             if (music == null)
                 return NotFound();
             return Ok(music);
@@ -38,7 +41,7 @@ namespace MvcMusic.Controllers
 
         [HttpPut("{id}")]
        // [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateMusic(int id, [FromBody]Music music)
+        public async Task<IActionResult> UpdateMusic(int id, [Bind("Title,ReleaseDate,Genre,Rating")] [FromBody]Music music)
         {
             if (music is null)
             {
